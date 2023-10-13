@@ -1,0 +1,3 @@
+h(A) :- x(A, blob), y(A, A).
+
+f(A, B, see) :- ican(see), h(A), h(B).

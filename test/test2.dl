@@ -1,0 +1,9 @@
+empty() :- .
+negative().
+zero() :- .
+one.
+two :- .
+three :- one, two.
+three?
+
+negation(1, -1).

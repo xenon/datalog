@@ -1,0 +1,22 @@
+/* hello world */
+% hello world
+
+fib(0, 0). % comment here
+
+
+fib(1, 1). % comment
+% another comment
+
+
+%c omment
+
+fib(N, F) :- !=(N, 1), /* assert N != 0 */
+             !=(N, 0),
+             N1 :- -(N, 1), % '-' is an external symbol
+             N2 :- -(N, 2),
+             fib(N1, F1),
+             fib(N2, F2),
+             F :- +(F1, F2).
+fib(30, F)?
+
+/* trailing comment */
