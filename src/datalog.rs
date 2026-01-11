@@ -16,6 +16,7 @@ pub struct Clause {
 pub struct Literal {
     pub name: LiteralName,
     pub terms: Vec<Term>,
+    pub negated: bool,
 }
 
 #[derive(Clone, Debug)]
@@ -68,6 +69,9 @@ impl Display for Clause {
 
 impl Display for Literal {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        if self.negated {
+            write!(f, "~")?;
+        }
         write!(f, "{}", self.name)?;
         if !self.terms.is_empty() {
             write!(f, "(")?;
