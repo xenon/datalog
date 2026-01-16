@@ -1,28 +1,68 @@
 use std::{fs::File, io::Read};
 
 pub mod datalog;
+pub mod engine;
 pub mod parser;
 
-const TITLE: &str = "Datalog";
-const PROMPT: &str = ">";
+use engine::{evaluate_program, format_query_result, Database, QueryEngine};
 
-fn run_repl(stmts: Vec<datalog::Statement>) {
+const TITLE: &str = "Datalog";
+
+fn run_program(stmts: Vec<datalog::Statement>) {
     println!("{TITLE}\n");
-    if !stmts.is_empty() {
-        println!("info{PROMPT} Loaded Statements:");
-        for stmt in stmts.iter() {
-            println!("defn{PROMPT} {stmt}");
+
+    // Separate assertions and queries
+    let mut db = Database::new();
+    let mut queries = Vec::new();
+
+    for stmt in stmts {
+        match stmt {
+            datalog::Statement::Assertion(clause) => {
+                println!("  {clause}.");
+                db.add_clause(&clause);
+            }
+            datalog::Statement::Query(lit) => {
+                queries.push(lit);
+            }
         }
-        println!("\n{PROMPT}");
+    }
+
+    // Evaluate the program (derive all facts)
+    if db.rules().is_empty() && db.fact_count() == 0 {
+        println!("No facts or rules loaded.\n");
+    } else {
+        println!("\nEvaluating...");
+        match evaluate_program(&mut db) {
+            Ok(result) => {
+                println!(
+                    "Derived {} new facts in {} iteration(s).",
+                    result.facts_derived, result.iterations
+                );
+                println!("Total facts: {}\n", db.fact_count());
+            }
+            Err(e) => {
+                eprintln!("Error: {}", e);
+                std::process::exit(1);
+            }
+        }
+    }
+
+    // Answer queries
+    if !queries.is_empty() {
+        let query_engine = QueryEngine::new(&db);
+
+        for query in queries {
+            println!("?- {}", query);
+            let result = query_engine.query(&query);
+            println!("{}\n", format_query_result(&query, &result));
+        }
     }
 }
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     let statements = match args.len() {
-        1 => {
-            vec![]
-        }
+        1 => vec![],
         2 => {
             let path = &args[1];
             match File::open(path) {
@@ -53,5 +93,5 @@ fn main() {
             std::process::exit(1);
         }
     };
-    run_repl(statements);
+    run_program(statements);
 }

@@ -1,0 +1,55 @@
+% The Map
+door(start, room_a).
+door(room_a, room_b).
+door(room_b, room_c).
+door(room_b, start). % A cycle!
+
+% Key locations
+key_at(room_a, red_key).
+key_at(room_c, blue_key).
+
+% Locked doors (From, To, RequiredKey)
+locked_door(room_b, room_d, blue_key).
+locked_door(room_d, win, red_key).
+
+% State definition: path(CurrentRoom, HasRedKey, HasBlueKey)
+% We use 0 (false) and 1 (true) for simple state tracking
+
+% Base Case: Start at 'start' with no keys
+path(start, 0, 0).
+
+% ---------------------------------------------------------
+% MOVEMENT LOGIC
+% ---------------------------------------------------------
+
+% 1. Move through open door (keep keys)
+path(To, R, B) :- 
+    path(From, R, B), 
+    door(From, To).
+
+% 2. Pick up Red Key (State change: 0 -> 1)
+path(Room, 1, B) :- 
+    path(Room, 0, B), 
+    key_at(Room, red_key).
+
+% 3. Pick up Blue Key (State change: 0 -> 1)
+path(Room, R, 1) :- 
+    path(Room, R, 0), 
+    key_at(Room, blue_key).
+
+% 4. Move through LOCKED door (Requires specific key)
+% Unlock Blue door
+path(To, R, 1) :- 
+    path(From, R, 1), 
+    locked_door(From, To, blue_key).
+
+% Unlock Red door
+path(To, 1, B) :- 
+    path(From, 1, B), 
+    locked_door(From, To, red_key).
+
+% ---------------------------------------------------------
+% QUERY
+% ---------------------------------------------------------
+% Can we reach the 'win' room?
+path(win, X, Y)?

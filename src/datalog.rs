@@ -12,33 +12,33 @@ pub struct Clause {
     pub body: Vec<Literal>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Literal {
     pub name: LiteralName,
     pub terms: Vec<Term>,
     pub negated: bool,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum LiteralName {
     IdentOrString(IdentOrString),
     Variable(String, IdentOrString),
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum Term {
     Constant(Constant),
     Variable(String),
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum Constant {
     IdentOrString(IdentOrString),
     Integer(i64),
     Bool(bool),
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum IdentOrString {
     Ident(String),
     String(String),

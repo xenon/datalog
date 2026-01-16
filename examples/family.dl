@@ -1,0 +1,11 @@
+% Family tree example
+parent(tom, bob).
+parent(bob, jim).
+parent(jim, ann).
+
+% Ancestor relation (transitive closure)
+ancestor(X, Y) :- parent(X, Y).
+ancestor(X, Z) :- parent(X, Y), ancestor(Y, Z).
+
+% Query: who are tom's descendants?
+ancestor(tom, X)?

@@ -1,0 +1,11 @@
+% A completely cyclic graph (A -> B -> C -> A...)
+link(a, b).
+link(b, c).
+link(c, a).
+
+% Transitive closure
+reachable(X, Y) :- link(X, Y).
+reachable(X, Z) :- link(X, Y), reachable(Y, Z).
+
+% Query: Can 'a' reach 'a'?
+reachable(a, a)?

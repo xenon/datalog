@@ -1,0 +1,73 @@
+% =========================================
+% 1. GEOMETRY
+% =========================================
+next(1, 2). next(2, 3). next(3, 4). next(4, 5).
+next(5, 6). next(6, 7). next(7, 8).
+
+coord(1).
+coord(Y) :- next(X, Y).
+
+% =========================================
+% 2. TEAMS (Replaces inequality \=)
+% =========================================
+opposing(white, black).
+opposing(black, white).
+
+% =========================================
+% 3. BOARD STATE
+% =========================================
+% White Rook at (1, 1)
+piece(rook, white, 1, 1).
+
+% White Pawn at (1, 4) -- THE BLOCKER
+piece(pawn, white, 1, 4).
+
+% Black King at (1, 8) -- THE TARGET
+piece(king, black, 1, 8).
+
+% =========================================
+% 4. EMPTY SQUARES (Replaces Negation !)
+% =========================================
+% We explicitly list squares that are NOT occupied.
+% Note: (1, 4) is MISSING because the Pawn is there.
+
+empty(1, 2).
+empty(1, 3).
+empty(1, 5).
+empty(1, 6).
+empty(1, 7).
+
+% =========================================
+% 5. LINE OF SIGHT LOGIC
+% =========================================
+% Base Case: Target is next to Source
+sees_vertical_north(X, Y1, Y2) :-
+    next(Y1, Y2),
+    coord(X).
+
+% Recursive Step:
+% We see from Y1 to Y3 if:
+% 1. Y2 is next to Y1
+% 2. Y2 is EMPTY
+% 3. We can see from Y2 to Y3
+sees_vertical_north(X, Y1, Y3) :-
+    next(Y1, Y2),
+    empty(X, Y2),
+    sees_vertical_north(X, Y2, Y3).
+
+% =========================================
+% 6. ATTACK LOGIC (Pure Unification)
+% =========================================
+% FIX: Instead of "AttackerType = rook", we put 'rook' 
+% directly into the piece/4 relation.
+
+attacks(rook, AttackerColor, TargetType, TargetColor) :-
+    piece(rook, AttackerColor, X, Y_Attacker),      
+    piece(TargetType, TargetColor, X, Y_Target),
+    opposing(AttackerColor, TargetColor),
+    sees_vertical_north(X, Y_Attacker, Y_Target).
+
+% =========================================
+% QUERY
+% =========================================
+attacks(rook, white, king, black)?

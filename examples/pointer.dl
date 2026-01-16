@@ -1,0 +1,56 @@
+% =========================================
+% DOMAIN: The Program Instructions
+% =========================================
+
+% alloc(Var, HeapObj) -> Var points to a new HeapObj
+alloc(p, h1).
+alloc(q, h2).
+
+% assign(Dest, Src) -> Dest gets value of Src
+assign(r, p).
+assign(s, q).
+assign(t, s).
+
+% store(DestVar, SrcVar) -> *DestVar = SrcVar
+store(r, t).
+
+% load(DestVar, SrcVar) -> DestVar = *SrcVar
+load(u, p).
+
+% =========================================
+% ANALYSIS LOGIC (Andersen's Algorithm)
+% =========================================
+
+% 1. Base Case: Allocation
+% If 'p' is allocated 'h1', then 'p' points-to 'h1'.
+points_to(Var, Obj) :- 
+    alloc(Var, Obj).
+
+% 2. Transitive Assignment
+% If 'x = y', and 'y' points to 'h1', then 'x' points to 'h1'.
+points_to(Dest, Obj) :- 
+    assign(Dest, Src), 
+    points_to(Src, Obj).
+
+% 3. Store Rule (*x = y)
+% If 'x' points to 'h1' and 'y' points to 'h2', 
+% then 'h1' "contains" a pointer to 'h2'.
+% We model this as a heap_points_to relation.
+heap_points_to(H1, H2) :- 
+    store(Dest, Src), 
+    points_to(Dest, H1), 
+    points_to(Src, H2).
+
+% 4. Load Rule (x = *y)
+% If 'y' points to 'h1', and 'h1' points to 'h2' (in the heap),
+% then 'x' must point to 'h2'.
+points_to(Dest, H2) :- 
+    load(Dest, Src), 
+    points_to(Src, H1), 
+    heap_points_to(H1, H2).
+
+% =========================================
+% QUERY
+% =========================================
+% Does variable 'u' point to heap object 'h2'?
+points_to(u, h2)?

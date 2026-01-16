@@ -1,0 +1,82 @@
+% =========================================
+% DOMAIN FACTS
+% =========================================
+% Opposites represent the two sides of the river
+opposite(left, right).
+opposite(right, left).
+
+% =========================================
+% SAFE STATES
+% =========================================
+% A state is defined as: state(Wolf, Goat, Cabbage, Farmer)
+% Logic: The state is safe if:
+% 1. The Farmer is with the Goat (Wolf and Cabbage won't eat each other), OR
+% 2. The Farmer is NOT with the Goat, but the Wolf is NOT with the Goat AND the Goat is NOT with the Cabbage.
+
+% Explicitly listing safe configurations is often cleaner in pure Datalog 
+% than complex negation logic depending on the engine's capability.
+
+% Everyone is together (Safe)
+safe(left, left, left, left).
+safe(right, right, right, right).
+
+% Farmer takes Goat (Wolf and Cabbage are left together, which is safe)
+safe(left, right, left, right).
+safe(right, left, right, left).
+
+% Farmer is with Wolf and Goat (Cabbage alone) - Safe
+safe(right, right, left, right).
+safe(left, left, right, left).
+
+% Farmer is with Goat and Cabbage (Wolf alone) - Safe
+safe(left, right, right, right).
+safe(right, left, left, left).
+
+% Farmer is with Wolf (Goat and Cabbage separated) - Safe? 
+% No, if Farmer is with Wolf, Goat and Cabbage are alone together. Unsafe.
+% We only list the strictly safe states where nothing gets eaten.
+
+safe(left, right, left, left).   % F=L, W=L, C=L (Goat on right)
+safe(right, left, right, right). % F=R, W=R, C=R (Goat on left)
+
+
+% =========================================
+% TRANSITION RULES (MOVES)
+% =========================================
+
+% 1. Farmer crosses alone
+% Precondition: Current state is safe, Next state must be safe.
+reachable(W, G, C, NextF) :- 
+    reachable(W, G, C, CurrentF), 
+    opposite(CurrentF, NextF), 
+    safe(W, G, C, NextF).
+
+% 2. Farmer takes Wolf
+reachable(NextPos, G, C, NextPos) :- 
+    reachable(CurrentPos, G, C, CurrentPos), % Farmer and Wolf must be on same side
+    opposite(CurrentPos, NextPos),
+    safe(NextPos, G, C, NextPos).
+
+% 3. Farmer takes Goat
+reachable(W, NextPos, C, NextPos) :- 
+    reachable(W, CurrentPos, C, CurrentPos), % Farmer and Goat must be on same side
+    opposite(CurrentPos, NextPos),
+    safe(W, NextPos, C, NextPos).
+
+% 4. Farmer takes Cabbage
+reachable(W, G, NextPos, NextPos) :- 
+    reachable(W, G, CurrentPos, CurrentPos), % Farmer and Cabbage must be on same side
+    opposite(CurrentPos, NextPos),
+    safe(W, G, NextPos, NextPos).
+
+% =========================================
+% INITIAL STATE
+% =========================================
+% Everyone starts on the left bank.
+reachable(left, left, left, left).
+
+% =========================================
+% QUERY
+% =========================================
+% Can we reach the state where everyone is on the right bank?
+reachable(right, right, right, right)?
